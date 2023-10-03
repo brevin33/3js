@@ -16,7 +16,7 @@ class fireFly{
 
     update(dt){
         while(this.hasPoint == false){
-            let dir =  new THREE.Vector3( Math.random() * 2 - 1, 0, Math.random() * 2 - 1 );
+            let dir =  new THREE.Vector3( Math.random() - .5, 0, Math.random() - .5 );
             dir = dir.normalize();
             let distance = Math.random() * 4.0 + 6.0;
             dir.multiplyScalar(distance).add(this.pos);

@@ -6,12 +6,17 @@ import { FBXLoader  } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 import { GrassField } from './grass.js';
 
+import { Stars } from './star.js';
+
 import { fireFly } from './firefly.js';
+
+import Stats from 'stats.js';
 
 
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const stats  = createStats();
 camera.lookAt(new THREE.Vector3(0,-.3,1));
 
 const renderer = new THREE.WebGLRenderer({
@@ -45,6 +50,9 @@ scene.add( cube );
 const grassField = new GrassField();
 scene.add(grassField);
 
+const stars = new Stars();
+scene.add(stars);
+
 const fireFlys = [];
 const body = new THREE.Mesh( box, unlitMaterial );
 const fireFlySize = .15;
@@ -58,7 +66,7 @@ const pointLight = new THREE.PointLight(0xfefaad, 7, 11, .3);
 pointLight.position.set(x, y, z);
 scene.add( pointLight );
 fireFlys.push(new fireFly(body, pointLight));
-for(let i = 0; i < 33; i++){
+for(let i = 0; i < 15; i++){
     const body = new THREE.Mesh( box, unlitMaterial );
     const fireFlySize = .15;
     body.scale.set(fireFlySize,fireFlySize,fireFlySize);
@@ -133,8 +141,23 @@ function animate( ) {
         fireFlys[i].update(dt);
     }
 
+    stats.update();
 	renderer.render( scene, camera );
 }
+
+function createStats() {
+    var stats = new Stats();
+    stats.setMode(0);
+
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.left = '0';
+    stats.domElement.style.top = '0';
+
+    document.body.appendChild(stats.dom)
+
+    return stats;
+}
+
 
 
 animate();
