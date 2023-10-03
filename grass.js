@@ -37,33 +37,24 @@ class GrassField extends THREE.Group {
         this.positions.push( -width, -height, width );
         this.positions.push( width, -height, -width );
         this.positions.push( -width, -height, -width );
-        this.positions.push( -width, -height, width );
-        this.positions.push( -width, -height, -width );
-        this.positions.push( width, -height, width );
-        this.positions.push( width, -height, -width );
 
         this.indexs.push(0);
+        this.indexs.push(2);
         this.indexs.push(1);
+        this.indexs.push(0);
+        this.indexs.push(1);
+        this.indexs.push(3);
+        this.indexs.push(0);
+        this.indexs.push(4);
         this.indexs.push(2);
         this.indexs.push(0);
         this.indexs.push(3);
         this.indexs.push(4);
-        this.indexs.push(0);
-        this.indexs.push(5);
-        this.indexs.push(6);
-        this.indexs.push(0);
-        this.indexs.push(7);
-        this.indexs.push(8);
 
         this.uvs.push(1.0, 0.0);
         this.uvs.push(0.0, 0.0);
         this.uvs.push(0.5, 1.0);
         this.uvs.push(0.0, 0.0);
-        this.uvs.push(0.5, 1.0);
-        this.uvs.push(0.0, 0.0);
-        this.uvs.push(0.5, 1.0);
-        this.uvs.push(0.0, 0.0);
-        this.uvs.push(0.5, 1.0);
 
         for(let i = 0; i < this.instances ; i++){
             let posX = Math.random() * this.w - this.w/2;

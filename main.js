@@ -30,7 +30,7 @@ renderer.shadowMap.type = THREE.VSMShadowMap;
 //document.body.appendChild( renderer.domElement );
 
 const geometry = new THREE.PlaneGeometry( 200, 200 );
-const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x001f00 } );
+const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x071914 } );
 const material = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
 const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
 const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );

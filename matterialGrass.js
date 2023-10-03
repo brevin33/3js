@@ -48,7 +48,7 @@ void main()
 
     finalPosi = rotate_vertex_position(finalPosi,axis,angle);
 
-    if(finalPosi.y >= -0.9){
+    if(uv.x >= 0.9){
         finalPosi.x = ( finalPosi.x + sin( time / 500.0 * ( angle * 0.01 )  ) * 0.1 );
         finalPosi.z = ( finalPosi.z + cos( time / 500.0 * ( angle * 0.01 )  ) * 0.1 );
     }
@@ -157,7 +157,7 @@ function GrassShaderMaterial(){
         vertexShader: Grass_VS,
         fragmentShader: Grass_FS,
         lights: true,
-        side: THREE.DoubleSide,
+        side: THREE.FrontSide,
     });
 
     return basicShaderMaterial;

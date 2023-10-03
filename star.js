@@ -7,7 +7,7 @@ class Stars extends THREE.Group {
 
         this.starMat = new THREE.MeshBasicMaterial( {color: 0x00ff00 });
 
-        this.instances = 1000;
+        this.instances = 4000;
 
         this.z = -22;
 
@@ -42,7 +42,7 @@ class Stars extends THREE.Group {
 
             let dir =  new THREE.Vector3( Math.random() - .5, Math.random()/3, Math.random() - .9 );
             dir.normalize();
-            let distance = Math.random() * 200.0 + 190.0;
+            let distance = Math.random() * 300.0 + 240.0;
             dir.multiplyScalar(distance);
 
             let posX = dir.x;
