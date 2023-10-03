@@ -37,10 +37,6 @@ class Stars extends THREE.Group {
         this.indexs.push(1);
         this.indexs.push(2);
 
-        this.uvs.push(1.0, 0.0);
-        this.uvs.push(0.0, 0.0);
-        this.uvs.push(0.5, 1.0);
-
 
         for(let i = 0; i < this.instances ; i++){
 
