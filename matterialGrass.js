@@ -42,11 +42,12 @@ vec3 rotate_vertex_position(vec3 position, vec3 axis, float angle){
 void main()
 {
     vuv = uv;
-    vec3 finalPosi = position + terrPosi;
 
     vec3 axis = vec3(0.0,1.0,0.0);
 
-    finalPosi = rotate_vertex_position(finalPosi,axis,angle);
+    vec3 p = rotate_vertex_position(position,axis,angle);
+
+    vec3 finalPosi = p + terrPosi;
 
     if(uv.x >= 0.9){
         finalPosi.x = ( finalPosi.x + sin( time / 500.0 * ( angle * 0.01 )  ) * 0.1 );
