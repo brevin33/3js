@@ -54,7 +54,7 @@ void main()
         finalPosi.z = ( finalPosi.z + cos( time / 500.0 * ( angle * 0.01 )  ) * 0.1 );
     }
 
-    vecNormal = (viewMatrix * modelMatrix * vec4(position, 0.0)).xyz;
+    vecNormal = (viewMatrix * modelMatrix * vec4(p, 0.0)).xyz;
     vecNormal = normalize(vecNormal);
 
     anglef = angle;
