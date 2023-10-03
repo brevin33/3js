@@ -8,13 +8,13 @@ class GrassField extends THREE.Group {
 
         this.grassMat = new THREE.MeshBasicMaterial( {color: 0x00ff00 });
 
-        this.instances = 30000;
+        this.instances = 40000;
 
         this.z = -22;
 
         this.w = 100;
         this.d = 100;
-        this.h = -1.3;
+        this.h = -1.5;
 
         this.positions = [];
         this.indexs = [];

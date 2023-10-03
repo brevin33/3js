@@ -6,6 +6,8 @@ import { FBXLoader  } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 import { GrassField } from './grass.js';
 
+import { fireFly } from './firefly.js';
+
 
 
 const scene = new THREE.Scene();
@@ -14,6 +16,7 @@ camera.lookAt(new THREE.Vector3(0,-.3,1));
 
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg'),
+    toneMapping: THREE.ACESFilmicToneMapping,
 });
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -22,9 +25,10 @@ renderer.shadowMap.type = THREE.VSMShadowMap;
 //document.body.appendChild( renderer.domElement );
 
 const geometry = new THREE.PlaneGeometry( 200, 200 );
-const planeMaterial = new THREE.MeshStandardMaterial( { color: 0x00614d } );
+const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x001f00 } );
 const material = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
 const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
+const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );
 const plane = new THREE.Mesh( geometry, planeMaterial );
 plane.receiveShadow = true;
 plane.rotation.x = - Math.PI / 2;
@@ -41,20 +45,35 @@ scene.add( cube );
 const grassField = new GrassField();
 scene.add(grassField);
 
-const dirLight = new THREE.DirectionalLight( 0xffffff, 5 );
-dirLight.position.set( 100, 200, 100 );
-dirLight.castShadow = true;
-dirLight.shadow.camera.top = 180;
-dirLight.shadow.camera.bottom = - 100;
-dirLight.shadow.camera.left = - 120;
-dirLight.shadow.camera.right = 120;
-scene.add( dirLight );
-
-const pointLight = new THREE.PointLight(0xffffff);
+const fireFlys = [];
+const body = new THREE.Mesh( box, unlitMaterial );
+const fireFlySize = .15;
+body.scale.set(fireFlySize,fireFlySize,fireFlySize);
+const x = 0;
+const z = -2;
+const y = .5;
+body.position.set(x, y, z);
+scene.add(body);
+const pointLight = new THREE.PointLight(0xfefaad, 7, 11, .3);
+pointLight.position.set(x, y, z);
 scene.add( pointLight );
+fireFlys.push(new fireFly(body, pointLight));
+for(let i = 0; i < 33; i++){
+    const body = new THREE.Mesh( box, unlitMaterial );
+    const fireFlySize = .15;
+    body.scale.set(fireFlySize,fireFlySize,fireFlySize);
+    const x = Math.random() * 60 - 30;
+    const z = Math.random() * 44 - 40;
+    const y = .5;
+    body.position.set(x, y, z);
+    scene.add(body);
+    const pointLight = new THREE.PointLight(0xfefaad, 5, 11, .3);
+    pointLight.position.set(x, y, z);
+    scene.add( pointLight );
+    fireFlys.push(new fireFly(body, pointLight));
+}
 
-
-const ambientLight = new THREE.AmbientLight( 0xffffff, .5 );
+const ambientLight = new THREE.AmbientLight( 0xffffff, .2 );
 scene.add( ambientLight );
 
 const loader = new FBXLoader();
@@ -68,7 +87,7 @@ loader.load( './pillar.fbx', function ( object ) {
     loadedMesh2.castShadow = true;
     loadedMesh3.castShadow = true;
     loadedMesh4.castShadow = true;
-    let height = 5;
+    let height = 3.3;
     let width = 1;
     loadedMesh.scale.set(width,width,height);
     loadedMesh2.scale.set(width,width,height);
@@ -78,13 +97,13 @@ loader.load( './pillar.fbx', function ( object ) {
     loadedMesh2.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
     loadedMesh3.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
     loadedMesh4.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
-    loadedMesh.position.set(10,0,-17);
+    loadedMesh.position.set(10,1.6,-17);
     scene.add( loadedMesh );
-    loadedMesh2.position.set(-10,0,-17);
+    loadedMesh2.position.set(-10,1.6,-17);
     scene.add( loadedMesh2 );
-    loadedMesh3.position.set(10,0,-4.5);
+    loadedMesh3.position.set(10,1.6,-4.5);
     scene.add( loadedMesh3 );
-    loadedMesh4.position.set(-10,0,-4.5);
+    loadedMesh4.position.set(-10,1.6,-4.5);
     scene.add( loadedMesh4 );
 }, undefined, function ( error ) {
     console.error( error );
@@ -109,6 +128,11 @@ function animate( ) {
     if( grassField ){
         grassField.update( dt )
     }
+
+    for(let i = 0; i < fireFlys.length; i++){
+        fireFlys[i].update(dt);
+    }
+
 	renderer.render( scene, camera );
 }
 
