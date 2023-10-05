@@ -12,6 +12,14 @@ import { fireFly } from './firefly.js';
 
 import Stats from 'stats.js';
 
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+
+import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
+import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
 
 
 const scene = new THREE.Scene();
@@ -30,7 +38,7 @@ renderer.shadowMap.type = THREE.VSMShadowMap;
 //document.body.appendChild( renderer.domElement );
 
 const geometry = new THREE.PlaneGeometry( 200, 200 );
-const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x071914 } );
+const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x0b2219 } );
 const material = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
 const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
 const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );
@@ -66,11 +74,11 @@ const pointLight = new THREE.PointLight(0xfefaad, 7, 11, .3);
 pointLight.position.set(x, y, z);
 scene.add( pointLight );
 fireFlys.push(new fireFly(body, pointLight));
-for(let i = 0; i < 15; i++){
+for(let i = 0; i < 20; i++){
     const body = new THREE.Mesh( box, unlitMaterial );
     const fireFlySize = .15;
     body.scale.set(fireFlySize,fireFlySize,fireFlySize);
-    const x = Math.random() * 60 - 30;
+    const x = Math.random() * 70 - 35;
     const z = Math.random() * 44 - 40;
     const y = .5;
     body.position.set(x, y, z);
@@ -123,6 +131,33 @@ camera.position.y = .2;
 const controls = new OrbitControls(camera, renderer.domElement)
 
 
+// post fx
+const composer = new EffectComposer( renderer );
+composer.addPass( new RenderPass( scene, camera ) );
+
+const effect1 = new ShaderPass( DotScreenShader );
+effect1.uniforms[ 'scale' ].value = 4;
+composer.addPass( effect1 );
+
+const effect2 = new ShaderPass( RGBShiftShader );
+effect2.uniforms[ 'amount' ].value = 0.0015;
+composer.addPass( effect2 );
+
+const effect3 = new OutputPass();
+composer.addPass( effect3 );
+
+window.addEventListener( 'resize', onWindowResize );
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    composer.setSize( window.innerWidth, window.innerHeight );
+
+}
+
 let d = new Date();
 var time = d.getTime(); 
 
@@ -131,8 +166,8 @@ function animate( ) {
     let d = new Date();
     let dt = d.getTime() - time; 
     time = d.getTime();
-	cube.rotation.x += .00055 * dt;
-	cube.rotation.y += .00055 * dt;
+	cube.rotation.x += .0002 * dt;
+	cube.rotation.y += .0002 * dt;
     if( grassField ){
         grassField.update( dt )
     }

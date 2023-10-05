@@ -11,7 +11,7 @@ class fireFly{
         this.pointlight = pointlight;
         this.hasPoint = false;
         this.point = new THREE.Vector3(0,0,0);
-        this.speed = .001;
+        this.speed = .0003;
     }
 
     update(dt){

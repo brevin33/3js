@@ -54,16 +54,16 @@ void main()
         finalPosi.z = ( finalPosi.z + cos( time / 500.0 * ( angle * 0.01 )  ) * 0.1 );
     }
 
-    vecNormal = (viewMatrix * modelMatrix * vec4(p, 0.0)).xyz;
+    mat4 viewModelMatrix = viewMatrix * modelMatrix;
+
+    vecNormal = (viewModelMatrix * vec4(p, 0.0)).xyz;
     vecNormal = normalize(vecNormal);
 
     anglef = angle;
 
-    vec4 realPos = viewMatrix * modelMatrix * vec4(finalPosi, 1.0);
+    vec4 realPos = viewModelMatrix * vec4(finalPosi, 1.0);
 
     vecPos = realPos.xyz;
-
-
 
     gl_Position = projectionMatrix * realPos;
 }
@@ -115,11 +115,9 @@ void main()
     vec3 c1 = vec3(.1411764705882353,.4745098039215686,.38823529411764707);
     float variance = .04;
     float sudoRand = mod(anglef * 9664.0, variance) - variance/2.0;
-    c1.x = c1.x + sudoRand;
-    c1.y = c1.y + sudoRand;
-    c1.z = c1.z + sudoRand;
+    c1 = c1 + sudoRand;
     c1 = c1 * 0.8;
-    vec3 c2 = c1 * 1.25;
+    vec3 c2 = c1 * 1.4;
     vec3 finalColor =  mix( c2,c1, vuv.y );
 
     //lights
