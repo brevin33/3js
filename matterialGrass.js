@@ -116,7 +116,7 @@ void main()
     float variance = .04;
     float sudoRand = mod(anglef * 9664.0, variance) - variance/2.0;
     c1 = c1 + sudoRand;
-    c1 = c1 * 0.8;
+    c1 = c1 * 0.04;
     vec3 c2 = c1 * 1.4;
     vec3 finalColor =  mix( c2,c1, vuv.y );
 
@@ -148,7 +148,7 @@ function GrassShaderMaterial(){
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib['lights'],
             {
-                lightIntensity: {type: 'f', value: 2.5},
+                lightIntensity: {type: 'f', value: 18.5},
                 time: {value: 0},
                 textureSampler: {type: 't', value: null}
             }

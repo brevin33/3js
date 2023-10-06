@@ -1,24 +1,21 @@
 import * as THREE from 'three';
-
 import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
-
 import { FBXLoader  } from 'three/examples/jsm/loaders/FBXLoader.js';
-
 import { GrassField } from './grass.js';
-
 import { Stars } from './star.js';
-
 import { fireFly } from './firefly.js';
-
+import {WebGLRenderTarget, HalfFloatType} from 'three';
 import Stats from 'stats.js';
-
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-
+import { LuminosityShader } from 'three/addons/shaders/LuminosityShader.js';
 import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
 import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import {BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 
 
 let renderer;
@@ -31,10 +28,15 @@ let camera;
 let d;
 let dt;
 let time;
-
+let composer;
+let postprocessingPasses;
+const emptySpaceBelow = 25;
+let x;
+let y;
 init();
 
 animate();
+
 
 
 function animate( ) {
@@ -53,29 +55,30 @@ function animate( ) {
     }
 
     stats.update();
-	renderer.render( scene, camera );
+	composer.render( );
 }
 
 function init(){
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / (window.innerHeight - emptySpaceBelow), 0.1, 1000 );
     stats  = createStats();
-    camera.lookAt(new THREE.Vector3(0,-.3,1));
+    camera.lookAt(new THREE.Vector3(0,0,-1));
     renderer = new THREE.WebGLRenderer({
         canvas: document.querySelector('#bg'),
-        toneMapping: THREE.ACESFilmicToneMapping,
         antialias: true,
     });
-    renderer.setSize( window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize( window.innerWidth, window.innerHeight - emptySpaceBelow);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,1));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.VSMShadowMap;
-    renderer.domElement.style.position = 'fixed';
-    renderer.domElement.style.left = '0';
+    renderer.toneMappingExposure = .1;
 
+    const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.04 );
+    scene.add( directionalLight );
 
+    // cube and plane
     const geometry = new THREE.PlaneGeometry( 200, 200 );
-    const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x0b2219 } );
+    const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x092016 } );
     const material = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
     const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
     const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );
@@ -92,12 +95,15 @@ function init(){
     cube.position.set(0,4,-13);
     scene.add( cube );
 
+    // grass
     grassField = new GrassField();
     scene.add(grassField);
 
+    // stars
     const stars = new Stars();
     scene.add(stars);
 
+    // fireflys
     fireFlys = [];
     const body = new THREE.Mesh( box, unlitMaterial );
     const fireFlySize = .15;
@@ -105,11 +111,19 @@ function init(){
     const x = 0;
     const z = -2;
     const y = .4;
-    body.position.set(x, y, z);
+    body.position.set(x - .8, y, z);
     scene.add(body);
-    const pointLight = new THREE.PointLight(0xfefaad, 1.5, 15, .3);
+    const pointLight = new THREE.PointLight(0xfefaad, 1.5, 10, .3);
     pointLight.position.set(x, y, z);
     scene.add( pointLight );
+    const body2 = new THREE.Mesh( box, unlitMaterial );
+    body2.scale.set(fireFlySize,fireFlySize,fireFlySize);
+    body2.position.set(x + .8, y, z);
+    scene.add(body2);
+    const pointLight2 = new THREE.PointLight(0xfefaad, 1.5, 10, .3);
+    pointLight.position.set(x, y, z);
+    scene.add( pointLight2 );
+    fireFlys.push(new fireFly(body2, pointLight2));
     fireFlys.push(new fireFly(body, pointLight));
     for(let i = 0; i < 20; i++){
         const body = new THREE.Mesh( box, unlitMaterial );
@@ -119,7 +133,7 @@ function init(){
         const z = Math.random() * 44 - 40;
         body.position.set(x, y, z);
         scene.add(body);
-        const pointLight = new THREE.PointLight(0xfefaad, 1.5, 15, .3);
+        const pointLight = new THREE.PointLight(0xfefaad, 1.5, 10, .3);
         pointLight.position.set(x, y, z);
         scene.add( pointLight );
         fireFlys.push(new fireFly(body, pointLight));
@@ -128,6 +142,7 @@ function init(){
     const ambientLight = new THREE.AmbientLight( 0xffffff, .2 );
     scene.add( ambientLight );
 
+    // pillars
     const loader = new FBXLoader();
 
     loader.load( './pillar.fbx', function ( object ) {
@@ -164,35 +179,60 @@ function init(){
     camera.position.z = 5;
     camera.position.y = .2;
 
-    const controls = new OrbitControls(camera, renderer.domElement)
+    //const controls = new OrbitControls(camera, renderer.domElement)
 
     d = new Date();
     time = d.getTime(); 
 
+    renderer.domElement.onmousemove = moveCamera;
+
 
     window.addEventListener( 'resize', onWindowResize );
+
+    // post
+    postprocessingPasses = []
+    postprocessingPasses.push(new RenderPass( scene, camera ));
+    postprocessingPasses.push(new OutputPass());
+    postprocessingPasses.push(new ShaderPass( LuminosityShader ));
+    postprocessingPasses.push(new ShaderPass( DotScreenShader ));
+    postprocessingPasses.push(new ShaderPass( RGBShiftShader ));
+    postprocessingPasses.push(new BokehPass( scene, camera, {focus: 0.0,  aspect : camera.aspect, maxblur: .0015, aperture: 0.05 } ));
+    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight - emptySpaceBelow ), 0.35, 0.5, 0.85 );
+    postprocessingPasses.push(bloomPass);
+    postprocessingPasses.push(new ShaderPass(GammaCorrectionShader));  
+    // ect
+
+    composer = new EffectComposer( renderer );
+    composer.addPass(postprocessingPasses[0]);
+    composer.addPass(postprocessingPasses[7]);
+    composer.addPass(postprocessingPasses[7]);
+
+    composer.addPass(postprocessingPasses[6]);
+    composer.addPass(postprocessingPasses[6]);
+    
+    composer.addPass(postprocessingPasses[1]);
 
 }
 
 function onWindowResize() {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = window.innerWidth / (window.innerHeight - emptySpaceBelow);
     camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( window.innerWidth, window.innerHeight - emptySpaceBelow );
+    composer.setSize( window.innerWidth, window.innerHeight - emptySpaceBelow );
 }
 
-
+function moveCamera(e){
+    x = (e.offsetX/window.innerWidth - 0.5) * 7.0;
+    y = (e.offsetY/(window.innerHeight - emptySpaceBelow) - 0.82) * 5.5;
+    camera.lookAt(new THREE.Vector3(x,-y,-1));
+}
 
 function createStats() {
     var stats = new Stats();
     stats.setMode(0);
-
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.left = '0';
     stats.domElement.style.top = '0';
-
     document.body.appendChild(stats.dom)
-
     return stats;
 }
