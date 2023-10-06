@@ -148,7 +148,7 @@ function GrassShaderMaterial(){
         uniforms: THREE.UniformsUtils.merge([
             THREE.UniformsLib['lights'],
             {
-                lightIntensity: {type: 'f', value: .9},
+                lightIntensity: {type: 'f', value: 2.5},
                 time: {value: 0},
                 textureSampler: {type: 't', value: null}
             }

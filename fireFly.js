@@ -11,7 +11,7 @@ class fireFly{
         this.pointlight = pointlight;
         this.hasPoint = false;
         this.point = new THREE.Vector3(0,0,0);
-        this.speed = .0003;
+        this.speed = .0002;
     }
 
     update(dt){
@@ -21,7 +21,7 @@ class fireFly{
             let distance = Math.random() * 4.0 + 6.0;
             dir.multiplyScalar(distance).add(this.pos);
             let d = this.Startpos.x * this.Startpos.x - dir.x * dir.x  + dir.y * dir.y - this.Startpos.y * this.Startpos.y + dir.z * dir.z - this.Startpos.z * this.Startpos.z;
-            if ( d < 77.0 ){
+            if ( d < 16.0 ){
                 this.point.x = dir.x;
                 this.point.y = dir.y;
                 this.point.z = dir.z;

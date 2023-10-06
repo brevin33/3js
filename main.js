@@ -21,150 +21,26 @@ import { DotScreenShader } from 'three/addons/shaders/DotScreenShader.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 
+let renderer;
+let grassField;
+let cube;
+let fireFlys;
+let stats;
+let scene;
+let camera;
+let d;
+let dt;
+let time;
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-const stats  = createStats();
-camera.lookAt(new THREE.Vector3(0,-.3,1));
+init();
 
-const renderer = new THREE.WebGLRenderer({
-    canvas: document.querySelector('#bg'),
-    toneMapping: THREE.ACESFilmicToneMapping,
-});
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.VSMShadowMap;
-//document.body.appendChild( renderer.domElement );
+animate();
 
-const geometry = new THREE.PlaneGeometry( 200, 200 );
-const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x0b2219 } );
-const material = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
-const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
-const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );
-const plane = new THREE.Mesh( geometry, planeMaterial );
-plane.receiveShadow = true;
-plane.rotation.x = - Math.PI / 2;
-plane.position.set(0,0-2.6,-22)
-plane.scale.set(.5,.5,.5);
-scene.add( plane );
-
-const box = new THREE.BoxGeometry( 1, 1, 1 );
-const cube = new THREE.Mesh( box, cubeMaterial );
-cube.scale.set(5.5,5.5,5.5);
-cube.position.set(0,4,-13);
-scene.add( cube );
-
-const grassField = new GrassField();
-scene.add(grassField);
-
-const stars = new Stars();
-scene.add(stars);
-
-const fireFlys = [];
-const body = new THREE.Mesh( box, unlitMaterial );
-const fireFlySize = .15;
-body.scale.set(fireFlySize,fireFlySize,fireFlySize);
-const x = 0;
-const z = -2;
-const y = .5;
-body.position.set(x, y, z);
-scene.add(body);
-const pointLight = new THREE.PointLight(0xfefaad, 7, 11, .3);
-pointLight.position.set(x, y, z);
-scene.add( pointLight );
-fireFlys.push(new fireFly(body, pointLight));
-for(let i = 0; i < 20; i++){
-    const body = new THREE.Mesh( box, unlitMaterial );
-    const fireFlySize = .15;
-    body.scale.set(fireFlySize,fireFlySize,fireFlySize);
-    const x = Math.random() * 70 - 35;
-    const z = Math.random() * 44 - 40;
-    const y = .5;
-    body.position.set(x, y, z);
-    scene.add(body);
-    const pointLight = new THREE.PointLight(0xfefaad, 5, 11, .3);
-    pointLight.position.set(x, y, z);
-    scene.add( pointLight );
-    fireFlys.push(new fireFly(body, pointLight));
-}
-
-const ambientLight = new THREE.AmbientLight( 0xffffff, .2 );
-scene.add( ambientLight );
-
-const loader = new FBXLoader();
-
-loader.load( './pillar.fbx', function ( object ) {
-    const loadedMesh = new THREE.Mesh( object.children[0].geometry, material );
-    const loadedMesh2 = new THREE.Mesh( object.children[0].geometry, material );
-    const loadedMesh3 = new THREE.Mesh( object.children[0].geometry, material );
-    const loadedMesh4 = new THREE.Mesh( object.children[0].geometry, material );
-    loadedMesh.castShadow = true;
-    loadedMesh2.castShadow = true;
-    loadedMesh3.castShadow = true;
-    loadedMesh4.castShadow = true;
-    let height = 3.3;
-    let width = 1;
-    loadedMesh.scale.set(width,width,height);
-    loadedMesh2.scale.set(width,width,height);
-    loadedMesh3.scale.set(width,width,height);
-    loadedMesh4.scale.set(width,width,height);
-    loadedMesh.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
-    loadedMesh2.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
-    loadedMesh3.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
-    loadedMesh4.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
-    loadedMesh.position.set(10,1.6,-17);
-    scene.add( loadedMesh );
-    loadedMesh2.position.set(-10,1.6,-17);
-    scene.add( loadedMesh2 );
-    loadedMesh3.position.set(10,1.6,-4.5);
-    scene.add( loadedMesh3 );
-    loadedMesh4.position.set(-10,1.6,-4.5);
-    scene.add( loadedMesh4 );
-}, undefined, function ( error ) {
-    console.error( error );
-} );
-
-camera.position.z = 5;
-camera.position.y = .2;
-
-const controls = new OrbitControls(camera, renderer.domElement)
-
-
-// post fx
-const composer = new EffectComposer( renderer );
-composer.addPass( new RenderPass( scene, camera ) );
-
-const effect1 = new ShaderPass( DotScreenShader );
-effect1.uniforms[ 'scale' ].value = 4;
-composer.addPass( effect1 );
-
-const effect2 = new ShaderPass( RGBShiftShader );
-effect2.uniforms[ 'amount' ].value = 0.0015;
-composer.addPass( effect2 );
-
-const effect3 = new OutputPass();
-composer.addPass( effect3 );
-
-window.addEventListener( 'resize', onWindowResize );
-
-function onWindowResize() {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    composer.setSize( window.innerWidth, window.innerHeight );
-
-}
-
-let d = new Date();
-var time = d.getTime(); 
 
 function animate( ) {
 	requestAnimationFrame( animate );
-    let d = new Date();
-    let dt = d.getTime() - time; 
+    d = new Date();
+    dt = d.getTime() - time; 
     time = d.getTime();
 	cube.rotation.x += .0002 * dt;
 	cube.rotation.y += .0002 * dt;
@@ -180,6 +56,134 @@ function animate( ) {
 	renderer.render( scene, camera );
 }
 
+function init(){
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    stats  = createStats();
+    camera.lookAt(new THREE.Vector3(0,-.3,1));
+    renderer = new THREE.WebGLRenderer({
+        canvas: document.querySelector('#bg'),
+        toneMapping: THREE.ACESFilmicToneMapping,
+        antialias: true,
+    });
+    renderer.setSize( window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.VSMShadowMap;
+    renderer.domElement.style.position = 'fixed';
+    renderer.domElement.style.left = '0';
+
+
+    const geometry = new THREE.PlaneGeometry( 200, 200 );
+    const planeMaterial = new THREE.MeshBasicMaterial( { color: 0x0b2219 } );
+    const material = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
+    const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
+    const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );
+    const plane = new THREE.Mesh( geometry, planeMaterial );
+    plane.receiveShadow = true;
+    plane.rotation.x = - Math.PI / 2;
+    plane.position.set(0,0-2.6,-22)
+    plane.scale.set(.5,.5,.5);
+    scene.add( plane );
+
+    const box = new THREE.BoxGeometry( 1, 1, 1 );
+    cube = new THREE.Mesh( box, cubeMaterial );
+    cube.scale.set(5.5,5.5,5.5);
+    cube.position.set(0,4,-13);
+    scene.add( cube );
+
+    grassField = new GrassField();
+    scene.add(grassField);
+
+    const stars = new Stars();
+    scene.add(stars);
+
+    fireFlys = [];
+    const body = new THREE.Mesh( box, unlitMaterial );
+    const fireFlySize = .15;
+    body.scale.set(fireFlySize,fireFlySize,fireFlySize);
+    const x = 0;
+    const z = -2;
+    const y = .4;
+    body.position.set(x, y, z);
+    scene.add(body);
+    const pointLight = new THREE.PointLight(0xfefaad, 1.5, 15, .3);
+    pointLight.position.set(x, y, z);
+    scene.add( pointLight );
+    fireFlys.push(new fireFly(body, pointLight));
+    for(let i = 0; i < 20; i++){
+        const body = new THREE.Mesh( box, unlitMaterial );
+        const fireFlySize = .15;
+        body.scale.set(fireFlySize,fireFlySize,fireFlySize);
+        const x = Math.random() * 70 - 35;
+        const z = Math.random() * 44 - 40;
+        body.position.set(x, y, z);
+        scene.add(body);
+        const pointLight = new THREE.PointLight(0xfefaad, 1.5, 15, .3);
+        pointLight.position.set(x, y, z);
+        scene.add( pointLight );
+        fireFlys.push(new fireFly(body, pointLight));
+    }
+
+    const ambientLight = new THREE.AmbientLight( 0xffffff, .2 );
+    scene.add( ambientLight );
+
+    const loader = new FBXLoader();
+
+    loader.load( './pillar.fbx', function ( object ) {
+        const loadedMesh = new THREE.Mesh( object.children[0].geometry, material );
+        const loadedMesh2 = new THREE.Mesh( object.children[0].geometry, material );
+        const loadedMesh3 = new THREE.Mesh( object.children[0].geometry, material );
+        const loadedMesh4 = new THREE.Mesh( object.children[0].geometry, material );
+        loadedMesh.castShadow = true;
+        loadedMesh2.castShadow = true;
+        loadedMesh3.castShadow = true;
+        loadedMesh4.castShadow = true;
+        let height = 3.3;
+        let width = 1;
+        loadedMesh.scale.set(width,width,height);
+        loadedMesh2.scale.set(width,width,height);
+        loadedMesh3.scale.set(width,width,height);
+        loadedMesh4.scale.set(width,width,height);
+        loadedMesh.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
+        loadedMesh2.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
+        loadedMesh3.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
+        loadedMesh4.rotateOnAxis(new THREE.Vector3(1,0,0), 1.571);
+        loadedMesh.position.set(10,1.6,-17);
+        scene.add( loadedMesh );
+        loadedMesh2.position.set(-10,1.6,-17);
+        scene.add( loadedMesh2 );
+        loadedMesh3.position.set(10,1.6,-4.5);
+        scene.add( loadedMesh3 );
+        loadedMesh4.position.set(-10,1.6,-4.5);
+        scene.add( loadedMesh4 );
+    }, undefined, function ( error ) {
+        console.error( error );
+    } );
+
+    camera.position.z = 5;
+    camera.position.y = .2;
+
+    const controls = new OrbitControls(camera, renderer.domElement)
+
+    d = new Date();
+    time = d.getTime(); 
+
+
+    window.addEventListener( 'resize', onWindowResize );
+
+}
+
+function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+
+
 function createStats() {
     var stats = new Stats();
     stats.setMode(0);
@@ -192,7 +196,3 @@ function createStats() {
 
     return stats;
 }
-
-
-
-animate();
