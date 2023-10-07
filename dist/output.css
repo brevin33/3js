@@ -647,8 +647,16 @@ video {
   left: 0px;
 }
 
+.left-96 {
+  left: 24rem;
+}
+
 .top-0 {
   top: 0px;
+}
+
+.top-96 {
+  top: 24rem;
 }
 
 .isolate {
@@ -1745,6 +1753,11 @@ video {
 .bg-\[rgb\(255\2c 0\2c 0\)\] {
   --tw-bg-opacity: 1;
   background-color: rgb(255 0 0 / var(--tw-bg-opacity));
+}
+
+.bg-red-950 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(69 10 10 / var(--tw-bg-opacity));
 }
 
 .decoration-slice {
