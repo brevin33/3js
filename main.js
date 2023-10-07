@@ -30,7 +30,7 @@ let dt;
 let time;
 let composer;
 let postprocessingPasses;
-const emptySpaceBelow = 25;
+const emptySpaceBelow = .95;
 let x;
 let y;
 init();
@@ -54,20 +54,18 @@ function animate( ) {
         fireFlys[i].update(dt);
     }
 
-    stats.update();
 	composer.render( );
 }
 
 function init(){
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / (window.innerHeight - emptySpaceBelow), 0.1, 1000 );
-    stats  = createStats();
+    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / (window.innerHeight * emptySpaceBelow), 0.1, 1000 );
     camera.lookAt(new THREE.Vector3(0,0,-1));
     renderer = new THREE.WebGLRenderer({
         canvas: document.querySelector('#bg'),
         antialias: true,
     });
-    renderer.setSize( window.innerWidth, window.innerHeight - emptySpaceBelow);
+    renderer.setSize( window.innerWidth, window.innerHeight * emptySpaceBelow);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,1));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.VSMShadowMap;
@@ -197,7 +195,7 @@ function init(){
     postprocessingPasses.push(new ShaderPass( DotScreenShader ));
     postprocessingPasses.push(new ShaderPass( RGBShiftShader ));
     postprocessingPasses.push(new BokehPass( scene, camera, {focus: 0.0,  aspect : camera.aspect, maxblur: .0015, aperture: 0.05 } ));
-    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight - emptySpaceBelow ), 0.35, 0.5, 0.85 );
+    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight * emptySpaceBelow ), 0.35, 0.5, 0.85 );
     postprocessingPasses.push(bloomPass);
     postprocessingPasses.push(new ShaderPass(GammaCorrectionShader));  
     // ect
@@ -215,15 +213,15 @@ function init(){
 }
 
 function onWindowResize() {
-    camera.aspect = window.innerWidth / (window.innerHeight - emptySpaceBelow);
+    camera.aspect = window.innerWidth / (window.innerHeight * emptySpaceBelow);
     camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight - emptySpaceBelow );
-    composer.setSize( window.innerWidth, window.innerHeight - emptySpaceBelow );
+    renderer.setSize( window.innerWidth, window.innerHeight * emptySpaceBelow );
+    composer.setSize( window.innerWidth, window.innerHeight * emptySpaceBelow );
 }
 
 function moveCamera(e){
     x = (e.offsetX/window.innerWidth - 0.5) * 7.0;
-    y = (e.offsetY/(window.innerHeight - emptySpaceBelow) - 0.82) * 5.5;
+    y = (e.offsetY/(window.innerHeight * emptySpaceBelow) - 0.82) * 5.5;
     camera.lookAt(new THREE.Vector3(x,-y,-1));
 }
 
