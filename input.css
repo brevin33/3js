@@ -10,3 +10,7 @@ html, body {
 .dragging{
     opacity: 0.5;
 }
+
+#dropdownContent {
+    z-index: 200;
+  }

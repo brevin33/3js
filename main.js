@@ -40,13 +40,17 @@ let currentCamLookAt;
 let pageActive = true;
 let shaderPassesDoc = document.querySelectorAll('.shaderPass');
 let shadersDoc = document.querySelectorAll('.shader');
+let shadersPipelinesDrops = document.querySelectorAll('.dropdown');
 let shaderPipelineDoc = document.getElementById('ShaderPipelineList');
 let shadersConDoc = document.getElementById('Shaders');
 let currentDraggingUnit = null;
 let isClone = false;
 let deadzone = document.getElementById('deadzone');
 let isOverShaderPipeline = false;
-
+const toggleButton = document.getElementById('toggleDropdown');
+const dropdownContent = document.getElementById('dropdownContent');
+const idToShaderName = [' ', ' ', ' ', ' ', ' ', ' ', 'Bloom', 'Gamma Correction', 'bob'];
+let defaultShaderPass;
 
 init();
 
@@ -54,8 +58,8 @@ init();
 animate();
 
 function animate( ) {
-    if(pageActive == false){return}
 	requestAnimationFrame( animate );
+    if(pageActive == false){return}
     d = new Date();
     dt = d.getTime() - time; 
     time = d.getTime();
@@ -74,6 +78,7 @@ function animate( ) {
     camera.lookAt(currentCamLookAt);
     stats.update();
 	composer.render( );
+    renderer.info.reset();
 }
 
 function init(){
@@ -90,6 +95,7 @@ function init(){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,1));
     renderer.shadowMap.enabled = false;
     renderer.toneMappingExposure = .1;
+    renderer.info.autoReset = false; 
     stats = createStats();
 
     const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
@@ -209,7 +215,6 @@ function init(){
     document.addEventListener("visibilitychange", (event) => {
         if (document.visibilityState == "visible") {
             pageActive = true;
-            animate();
         } else {
             pageActive = false;
         }
@@ -224,14 +229,29 @@ function init(){
         shaderPassDoc.addEventListener('dragstart', dragStartShaderPass);
         shaderPassDoc.addEventListener('dragend', dragEndShaderPass);
         shaderPassDoc.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
-    })
+    });
     shadersDoc.forEach(shaderDoc => {
         shaderDoc.addEventListener('dragstart', dragStartShader);
         shaderDoc.addEventListener('dragend', dragEndShader);
         shaderDoc.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
-    })
+    });
+
+    toggleButton.addEventListener('click', () => {
+        dropdownContent.classList.toggle('hidden');
+      });
+  
+    document.addEventListener('click', (event) => {
+      if (!toggleButton.contains(event.target) && !dropdownContent.contains(event.target)) {
+        dropdownContent.classList.add('hidden');
+        dropdownContent.getElementsByTagName('button')[0].addEventListener('click', deleteItem2);
+      }
+    });
+
+    shadersPipelinesDrops.forEach(shadersPipelinesDrop => {shadersPipelinesDrop.addEventListener('click', selectPipeline)});
 
     shaderPassesDoc = [...shaderPassesDoc];
+
+    defaultShaderPass = shaderPassesDoc[0].cloneNode(true);
 
     // post
     postprocessingPasses = []
@@ -277,6 +297,11 @@ function deleteItem(){
     this.parentElement.remove();
     shaderPassesDoc = [...document.querySelectorAll('.shaderPass')];
     setupComposer();
+}
+
+function deleteItem2(event){
+    event.stopPropagation();
+    this.parentElement.parentElement.remove();
 }
 
 function getDragAfterElement(container, y){
@@ -368,4 +393,22 @@ function shaderMenuButtonClicked(){
 function moveTowards(num1, num2, maxSpeed){
     if(num1 > num2){return Math.max( num1 - maxSpeed, num2);}
     else{return Math.min( num1 + maxSpeed, num2);}
+}
+
+function selectPipeline(){
+    const shaderIds = JSON.parse(this.id);
+    shaderPipelineDoc.innerHTML = '';
+    for(let i = 0; i < shaderIds.length;  i++){
+        let shaderId = shaderIds[i];
+        let newPass = defaultShaderPass.cloneNode(true); 
+        newPass.id = shaderId;
+        console.log(newPass.getElementsByTagName('p'));
+        newPass.getElementsByTagName('p')[0].innerHTML  = idToShaderName[shaderId];
+        newPass.addEventListener('dragstart', dragStartShaderPass);
+        newPass.addEventListener('dragend', dragEndShaderPass);
+        newPass.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
+        shaderPipelineDoc.appendChild(newPass);
+    }
+    shaderPassesDoc = [...document.querySelectorAll('.shaderPass')];
+    setupComposer();
 }

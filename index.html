@@ -14,27 +14,52 @@
 		</button>
 		<div class="absolute top-0 w-[20%] h-[100%] bg-black bg-opacity-25 transition-all" style="left: 100%;" id="shaderMenu">
 			<div id="ShaderPipeline" class="relative top-[5%]">
-				<h1 class="text-white text-3xl">Post Processing Pipeline</h1>
+				<h1 class="text-white text-2xl pb-2">Post Processing Pipeline</h1>
 
-				
+				<div class="w-[70%]">
 
-				<div id="ShaderPipelineList" class="bg-white bg-opacity-10 w-[70%] min-h-[44px]">
-					<div draggable="true" class="text-xl p-2 m-2 shaderPass" id="7">
+					<!-- Custom dropdown with Tailwind CSS classes -->
+					<div class="relative inline-block text-left">
+						<div>
+						<button id="toggleDropdown" class="mb-3 p-2 text-black bg-white border border-gray-300 rounded hover:bg-gray-300">
+							Select an Pipeline
+						</button>
+						</div>
+						<div id="dropdownContent" class="hidden origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" tabindex="-1">
+						<div class="hover:bg-gray-200 cursor-pointer dropdown py-1 z-50" role="menuitem" id="[]">
+							<span class="flex items-center justify-between">
+							<span>Nothing</span>
+							<button class="hover:bg-red-700 text-white bg-red-500 px-2 py-1 rounded mr-1" style="scale: 1;">Delete</button>
+							</span>
+						</div>
+						<div class="hover:bg-gray-200 cursor-pointer dropdown py-1 z-50" role="menuitem" id="[7,7,6,6]">
+							<span class="flex items-center justify-between">
+							<span>Dream</span>
+							<button class="hover:bg-red-700 text-white bg-red-500 px-2 py-1 rounded mr-1" style="scale: 0;">Delete</button>
+							</span>
+						</div>
+						</div>
+					</div>
+					<button class="p-2 pl-[5%] pr-[5%] bg-white text-black rounded float-right hover:bg-gray-300">Save</button>
+
+				</div>
+				<div id="ShaderPipelineList" class="z-0 bg-white bg-opacity-10 w-[70%] min-h-[44px]">
+					<div draggable="true" class="text-xl p-1 shaderPass hover:bg-gray-200 hover:bg-opacity-5 cursor-grab" id="7">
 						<svg class="svg-icon inline-block relative top-[-2px]"   style="width: 1em; height: 1em;vertical-align: middle;fill: white;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M896 544 128 544C110.32 544 96 529.68 96 512 96 494.32 110.32 480 128 480L896 480C913.68 480 928 494.32 928 512 928 529.68 913.68 544 896 544ZM896 224 128 224C110.32 224 96 209.68 96 192 96 174.32 110.32 160 128 160L896 160C913.68 160 928 174.32 928 192 928 209.68 913.68 224 896 224ZM128 800 896 800C913.68 800 928 814.32 928 832 928 849.68 913.68 864 896 864L128 864C110.32 864 96 849.68 96 832 96 814.32 110.32 800 128 800Z"  /></svg>
 						<p class="text-white text-center left-[50%] inline-block">Gamma Correction</p>
 						<button class="text-red-500 float-right inline-block"> X </button>
 					</div>
-					<div draggable="true" class="text-xl p-2 m-2 shaderPass" id="7">
+					<div draggable="true" class="text-xl p-1 shaderPass hover:bg-gray-200 hover:bg-opacity-5 cursor-grab" id="7">
 						<svg class="svg-icon inline-block relative top-[-2px]"   style="width: 1em; height: 1em;vertical-align: middle;fill: white;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M896 544 128 544C110.32 544 96 529.68 96 512 96 494.32 110.32 480 128 480L896 480C913.68 480 928 494.32 928 512 928 529.68 913.68 544 896 544ZM896 224 128 224C110.32 224 96 209.68 96 192 96 174.32 110.32 160 128 160L896 160C913.68 160 928 174.32 928 192 928 209.68 913.68 224 896 224ZM128 800 896 800C913.68 800 928 814.32 928 832 928 849.68 913.68 864 896 864L128 864C110.32 864 96 849.68 96 832 96 814.32 110.32 800 128 800Z"  /></svg>
 						<p class="text-white text-center left-[50%] inline-block">Gamma Correction</p>
 						<button class="text-red-500 float-right inline-block"> X </button>
 					</div>
-					<div draggable="true" class="text-xl p-2 m-2 shaderPass" id="6">
+					<div draggable="true" class="text-xl p-1 shaderPass hover:bg-gray-200 hover:bg-opacity-5 cursor-grab" id="6">
 						<svg class="svg-icon inline-block relative top-[-2px]"   style="width: 1em; height: 1em;vertical-align: middle;fill: white;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M896 544 128 544C110.32 544 96 529.68 96 512 96 494.32 110.32 480 128 480L896 480C913.68 480 928 494.32 928 512 928 529.68 913.68 544 896 544ZM896 224 128 224C110.32 224 96 209.68 96 192 96 174.32 110.32 160 128 160L896 160C913.68 160 928 174.32 928 192 928 209.68 913.68 224 896 224ZM128 800 896 800C913.68 800 928 814.32 928 832 928 849.68 913.68 864 896 864L128 864C110.32 864 96 849.68 96 832 96 814.32 110.32 800 128 800Z"  /></svg>
 						<p class="text-white text-center left-[50%] inline-block">Bloom</p>
 						<button class="text-red-500 float-right inline-block"> X </button>
 					</div>
-					<div draggable="true" class="text-xl p-2 m-2 shaderPass" id="6">
+					<div draggable="true" class="text-xl p-1 shaderPass hover:bg-gray-200 hover:bg-opacity-5 cursor-grab" id="6">
 						<svg class="svg-icon inline-block relative top-[-2px]"   style="width: 1em; height: 1em;vertical-align: middle;fill: white;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M896 544 128 544C110.32 544 96 529.68 96 512 96 494.32 110.32 480 128 480L896 480C913.68 480 928 494.32 928 512 928 529.68 913.68 544 896 544ZM896 224 128 224C110.32 224 96 209.68 96 192 96 174.32 110.32 160 128 160L896 160C913.68 160 928 174.32 928 192 928 209.68 913.68 224 896 224ZM128 800 896 800C913.68 800 928 814.32 928 832 928 849.68 913.68 864 896 864L128 864C110.32 864 96 849.68 96 832 96 814.32 110.32 800 128 800Z"  /></svg>
 						<p class="text-white text-center left-[50%] inline-block">Bloom</p>
 						<button class="text-red-500 float-right inline-block"> X </button>
@@ -42,17 +67,17 @@
 				</div>
 			</div>
 
-			<div id="Shaders" class="relative top-[5.5%]">
+			<div id="Shaders" class="relative top-[5.5%] z-10">
 
-				<h1 class="text-white text-3xl">Post Processing Shaders</h1>
+				<h1 class="text-white text-2xl pb-2">Post Processing Shaders</h1>
 
 				<div id="ShaderList" class="bg-white bg-opacity-10 w-[70%]">
-					<div draggable="true" class="text-xl p-2 m-2 shader" id="7">
-						<svg class="svg-icon inline-block relative top-[-2px]"   style="width: 1em; height: 1em;vertical-align: middle;fill: white;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M896 544 128 544C110.32 544 96 529.68 96 512 96 494.32 110.32 480 128 480L896 480C913.68 480 928 494.32 928 512 928 529.68 913.68 544 896 544ZM896 224 128 224C110.32 224 96 209.68 96 192 96 174.32 110.32 160 128 160L896 160C913.68 160 928 174.32 928 192 928 209.68 913.68 224 896 224ZM128 800 896 800C913.68 800 928 814.32 928 832 928 849.68 913.68 864 896 864L128 864C110.32 864 96 849.68 96 832 96 814.32 110.32 800 128 800Z"  /></svg>
+					<div draggable="true" class="text-xl p-1 shader hover:bg-gray-200 hover:bg-opacity-5 cursor-grab" id="7">
+						<svg class="svg-icon inline-block relatives top-[-2px]"   style="width: 1em; height: 1em;vertical-align: middle;fill: white;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M896 544 128 544C110.32 544 96 529.68 96 512 96 494.32 110.32 480 128 480L896 480C913.68 480 928 494.32 928 512 928 529.68 913.68 544 896 544ZM896 224 128 224C110.32 224 96 209.68 96 192 96 174.32 110.32 160 128 160L896 160C913.68 160 928 174.32 928 192 928 209.68 913.68 224 896 224ZM128 800 896 800C913.68 800 928 814.32 928 832 928 849.68 913.68 864 896 864L128 864C110.32 864 96 849.68 96 832 96 814.32 110.32 800 128 800Z"  /></svg>
 						<p class="text-white text-center left-[50%] inline-block">Gamma Correction</p>
 						<button class="text-red-500 float-right inline-block" style="scale: 0%;"> X </button>
 					</div>
-					<div draggable="true" class="text-xl p-2 m-2 shader" id="6">
+					<div draggable="true" class="text-xl p-1 shader hover:bg-gray-200 hover:bg-opacity-5 cursor-grab" id="6">
 						<svg class="svg-icon inline-block relative top-[-2px]"   style="width: 1em; height: 1em;vertical-align: middle;fill: white;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M896 544 128 544C110.32 544 96 529.68 96 512 96 494.32 110.32 480 128 480L896 480C913.68 480 928 494.32 928 512 928 529.68 913.68 544 896 544ZM896 224 128 224C110.32 224 96 209.68 96 192 96 174.32 110.32 160 128 160L896 160C913.68 160 928 174.32 928 192 928 209.68 913.68 224 896 224ZM128 800 896 800C913.68 800 928 814.32 928 832 928 849.68 913.68 864 896 864L128 864C110.32 864 96 849.68 96 832 96 814.32 110.32 800 128 800Z"  /></svg>
 						<p class="text-white text-center left-[50%] inline-block">Bloom</p>
 						<button class="text-red-500 float-right inline-block" style="scale: 0%;"> X </button>
