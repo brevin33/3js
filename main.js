@@ -3,7 +3,6 @@ import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import { FBXLoader  } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { GrassField } from './grass.js';
 import { Stars } from './star.js';
-import { fireFly } from './firefly.js';
 import {WebGLRenderTarget, HalfFloatType} from 'three';
 import Stats from 'stats.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -16,7 +15,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import {BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
-
+import { fireFly } from './firefly.js';
 
 let renderer;
 let grassField;
@@ -30,16 +29,32 @@ let dt;
 let time;
 let composer;
 let postprocessingPasses;
-const emptySpaceBelow = .95;
+const emptySpaceBelow = 1.0;
 let x;
 let y;
+let shaderMenuButton;
+let shaderMenu;
+let shaderMenuOut = false;
+let desiredCamLookAt;
+let currentCamLookAt;
+let pageActive = true;
+let shaderPassesDoc = document.querySelectorAll('.shaderPass');
+let shadersDoc = document.querySelectorAll('.shader');
+let shaderPipelineDoc = document.getElementById('ShaderPipelineList');
+let shadersConDoc = document.getElementById('Shaders');
+let currentDraggingUnit = null;
+let isClone = false;
+let deadzone = document.getElementById('deadzone');
+let isOverShaderPipeline = false;
+
+
 init();
+
 
 animate();
 
-
-
 function animate( ) {
+    if(pageActive == false){return}
 	requestAnimationFrame( animate );
     d = new Date();
     dt = d.getTime() - time; 
@@ -54,6 +69,10 @@ function animate( ) {
         fireFlys[i].update(dt);
     }
 
+    currentCamLookAt.x = moveTowards(currentCamLookAt.x, desiredCamLookAt.x, .015*dt);
+    currentCamLookAt.y = moveTowards(currentCamLookAt.y, desiredCamLookAt.y, .015*dt);
+    camera.lookAt(currentCamLookAt);
+    stats.update();
 	composer.render( );
 }
 
@@ -61,17 +80,20 @@ function init(){
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / (window.innerHeight * emptySpaceBelow), 0.1, 1000 );
     camera.lookAt(new THREE.Vector3(0,0,-1));
+    currentCamLookAt = new THREE.Vector3(0,0,-1);
+    desiredCamLookAt = new THREE.Vector3(0,0,-1);
     renderer = new THREE.WebGLRenderer({
         canvas: document.querySelector('#bg'),
         antialias: true,
     });
     renderer.setSize( window.innerWidth, window.innerHeight * emptySpaceBelow);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,1));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.VSMShadowMap;
+    renderer.shadowMap.enabled = false;
     renderer.toneMappingExposure = .1;
+    stats = createStats();
 
-    const directionalLight = new THREE.DirectionalLight( 0xffffff, 0.04 );
+    const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    directionalLight.position.set(.1,1,-.2);
     scene.add( directionalLight );
 
     // cube and plane
@@ -81,7 +103,6 @@ function init(){
     const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
     const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );
     const plane = new THREE.Mesh( geometry, planeMaterial );
-    plane.receiveShadow = true;
     plane.rotation.x = - Math.PI / 2;
     plane.position.set(0,0-2.6,-22)
     plane.scale.set(.5,.5,.5);
@@ -123,7 +144,7 @@ function init(){
     scene.add( pointLight2 );
     fireFlys.push(new fireFly(body2, pointLight2));
     fireFlys.push(new fireFly(body, pointLight));
-    for(let i = 0; i < 20; i++){
+    for(let i = 0; i < 25; i++){
         const body = new THREE.Mesh( box, unlitMaterial );
         const fireFlySize = .15;
         body.scale.set(fireFlySize,fireFlySize,fireFlySize);
@@ -148,10 +169,6 @@ function init(){
         const loadedMesh2 = new THREE.Mesh( object.children[0].geometry, material );
         const loadedMesh3 = new THREE.Mesh( object.children[0].geometry, material );
         const loadedMesh4 = new THREE.Mesh( object.children[0].geometry, material );
-        loadedMesh.castShadow = true;
-        loadedMesh2.castShadow = true;
-        loadedMesh3.castShadow = true;
-        loadedMesh4.castShadow = true;
         let height = 3.3;
         let width = 1;
         loadedMesh.scale.set(width,width,height);
@@ -182,10 +199,39 @@ function init(){
     d = new Date();
     time = d.getTime(); 
 
+
+
+    // events
+    shaderMenuButton = document.getElementById('shaderMenuButton');
+    shaderMenuButton.addEventListener("click", shaderMenuButtonClicked)
+    shaderMenu = document.getElementById('shaderMenu');
     renderer.domElement.onmousemove = moveCamera;
-
-
+    document.addEventListener("visibilitychange", (event) => {
+        if (document.visibilityState == "visible") {
+            pageActive = true;
+            animate();
+        } else {
+            pageActive = false;
+        }
+      });
     window.addEventListener( 'resize', onWindowResize );
+
+    shaderPipelineDoc.addEventListener('dragover', dragOverPipline);
+    shaderPipelineDoc.addEventListener('dragleave', dragLeavePipline);
+
+
+    shaderPassesDoc.forEach(shaderPassDoc => {
+        shaderPassDoc.addEventListener('dragstart', dragStartShaderPass);
+        shaderPassDoc.addEventListener('dragend', dragEndShaderPass);
+        shaderPassDoc.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
+    })
+    shadersDoc.forEach(shaderDoc => {
+        shaderDoc.addEventListener('dragstart', dragStartShader);
+        shaderDoc.addEventListener('dragend', dragEndShader);
+        shaderDoc.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
+    })
+
+    shaderPassesDoc = [...shaderPassesDoc];
 
     // post
     postprocessingPasses = []
@@ -200,14 +246,16 @@ function init(){
     postprocessingPasses.push(new ShaderPass(GammaCorrectionShader));  
     // ect
 
+    setupComposer();
+
+}
+
+function setupComposer(){
     composer = new EffectComposer( renderer );
     composer.addPass(postprocessingPasses[0]);
-    composer.addPass(postprocessingPasses[7]);
-    composer.addPass(postprocessingPasses[7]);
-
-    composer.addPass(postprocessingPasses[6]);
-    composer.addPass(postprocessingPasses[6]);
-    
+    for(let i = 0; i < shaderPassesDoc.length; i++){
+        composer.addPass(postprocessingPasses[parseInt(shaderPassesDoc[i].id)]);
+    }
     composer.addPass(postprocessingPasses[1]);
 
 }
@@ -222,7 +270,76 @@ function onWindowResize() {
 function moveCamera(e){
     x = (e.offsetX/window.innerWidth - 0.5) * 7.0;
     y = (e.offsetY/(window.innerHeight * emptySpaceBelow) - 0.82) * 5.5;
-    camera.lookAt(new THREE.Vector3(x,-y,-1));
+    desiredCamLookAt = new THREE.Vector3(x,-y,-1);
+}
+
+function deleteItem(){
+    this.parentElement.remove();
+    shaderPassesDoc = [...document.querySelectorAll('.shaderPass')];
+    setupComposer();
+}
+
+function getDragAfterElement(container, y){
+    return shaderPassesDoc.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if(offset < 0 && offset > closest.offset){
+            return {offset: offset, element: child};
+        }else{
+            return closest;
+        }
+    }, {offset: Number.NEGATIVE_INFINITY}).element;
+}
+
+function dragOverPipline(e){
+    e.preventDefault();
+    let afterElement = getDragAfterElement(this, e.clientY);
+    if(afterElement == null){
+        this.appendChild(currentDraggingUnit);
+    }else{
+        this.insertBefore(currentDraggingUnit, afterElement);
+    }
+    isOverShaderPipeline = true;
+}
+
+function dragLeavePipline(){
+    isOverShaderPipeline = false;
+}
+
+function dragStartShader(){
+    this.classList.add('dragging');
+    currentDraggingUnit = this.cloneNode(true);
+    currentDraggingUnit.addEventListener('dragstart', dragStartShaderPass);
+    currentDraggingUnit.addEventListener('dragend', dragEndShaderPass);
+    currentDraggingUnit.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
+    currentDraggingUnit.getElementsByTagName('button')[0].style.scale = '100%';
+    isClone = true;
+}
+
+function dragStartShaderPass(){
+    this.classList.add('dragging');
+    currentDraggingUnit = this;
+    isClone = false;
+}
+
+function dragEndShader(){
+    this.classList.remove('dragging');
+    if(!isOverShaderPipeline){
+        currentDraggingUnit.remove();
+    }else{
+        currentDraggingUnit.classList.remove('dragging');
+        currentDraggingUnit.classList.add('shaderPass');
+        shaderPassesDoc = [...document.querySelectorAll('.shaderPass')];
+        currentDraggingUnit = null;
+        setupComposer();
+    }
+}
+
+function dragEndShaderPass(){
+    this.classList.remove('dragging');
+    currentDraggingUnit = null;
+    shaderPassesDoc = [...document.querySelectorAll('.shaderPass')];
+    setupComposer();
 }
 
 function createStats() {
@@ -233,4 +350,22 @@ function createStats() {
     stats.domElement.style.top = '0';
     document.body.appendChild(stats.dom)
     return stats;
+}
+
+function shaderMenuButtonClicked(){
+    if(shaderMenuOut){
+        shaderMenu.style.left = '100%';
+        shaderMenuButton.style.left = '95%';
+        shaderMenuOut = false;
+    }
+    else{
+        shaderMenu.style.left = '80%';
+        shaderMenuButton.style.left = '75%';
+        shaderMenuOut = true;
+    }
+}
+
+function moveTowards(num1, num2, maxSpeed){
+    if(num1 > num2){return Math.max( num1 - maxSpeed, num2);}
+    else{return Math.min( num1 + maxSpeed, num2);}
 }
