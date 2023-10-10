@@ -8,7 +8,7 @@
 	<body class="">
 
 		<div id="shaderPopup" class="left-[20%] top-[15%] w-[60%] h-[70%] bg-slate-900 absolute hidden">
-			<textarea name="Fragment Shader" id="" cols="1" rows="1" class="h-[97%] w-[85%] resize-none m-2"></textarea>
+			<div id="editor" class="h-[97%] w-[85%] resize-none m-2"></div>
 			<button class="absolute left-[87.8%] bg-white p-2 top-[85%] w-[10%] hover:bg-gray-300">Save</button>
 		</div>
 
@@ -96,6 +96,14 @@
 
 
 		<h1 class="bg-red-950">hi</h1>
+
+		<script src="AceCodeEditor/ace.js"></script>
+		<script src="AceCodeEditor/mode-glsl.js"></script>
+		<script>
+			var editor = ace.edit("editor");
+			editor.setTheme("ace/theme/monokai");
+			editor.session.setMode("ace/mode/glsl");
+		</script>
 
 		<script type="module" src="/main.js"></script>
 	</body>
