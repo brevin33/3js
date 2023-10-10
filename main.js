@@ -41,6 +41,7 @@ let pageActive = true;
 let shaderPassesDoc = document.querySelectorAll('.shaderPass');
 let shadersDoc = document.querySelectorAll('.shader');
 let shadersPipelinesDrops = document.querySelectorAll('.dropdown');
+let PipelineDropdownHolder = document.querySelector('.dropdownContent');
 let shaderPipelineDoc = document.getElementById('ShaderPipelineList');
 let shadersConDoc = document.getElementById('Shaders');
 let currentDraggingUnit = null;
@@ -51,9 +52,12 @@ const toggleButton = document.getElementById('toggleDropdown');
 const dropdownContent = document.getElementById('dropdownContent');
 const idToShaderName = [' ', ' ', ' ', ' ', ' ', ' ', 'Bloom', 'Gamma Correction', 'bob'];
 let defaultShaderPass;
+let defaultShaderPipeline = document.querySelector('.defaultShaderPipeline').cloneNode(true);
+let pipelineNameInput = document.querySelector('.nameInputPipeline');
+let newShaderButton = document.getElementById("NewShaderButton");
+let newShaderMenu = document.getElementById("shaderPopup");
 
 init();
-
 
 animate();
 
@@ -249,6 +253,10 @@ function init(){
 
     shadersPipelinesDrops.forEach(shadersPipelinesDrop => {shadersPipelinesDrop.addEventListener('click', selectPipeline)});
 
+    newShaderButton.addEventListener('click', newShaderButtonPressed);
+
+    document.getElementById('Save').addEventListener('click', saveShaderPass);
+
     shaderPassesDoc = [...shaderPassesDoc];
 
     defaultShaderPass = shaderPassesDoc[0].cloneNode(true);
@@ -293,6 +301,11 @@ function moveCamera(e){
     desiredCamLookAt = new THREE.Vector3(x,-y,-1);
 }
 
+function newShaderButtonPressed(){
+    shaderMenuButtonClicked();
+    newShaderMenu.classList.remove("hidden");
+}
+
 function deleteItem(){
     this.parentElement.remove();
     shaderPassesDoc = [...document.querySelectorAll('.shaderPass')];
@@ -302,6 +315,21 @@ function deleteItem(){
 function deleteItem2(event){
     event.stopPropagation();
     this.parentElement.parentElement.remove();
+}
+
+function saveShaderPass(){
+    let newShaderPipeline = defaultShaderPipeline.cloneNode(true);
+    newShaderPipeline.addEventListener('click', selectPipeline);
+    let deleteButton = newShaderPipeline.getElementsByTagName('button')[0];
+    deleteButton.addEventListener('click', deleteItem2);
+    deleteButton.style.scale = 1;
+    let shaderPasses = []
+    for(let i = 0; i < shaderPassesDoc.length; i++){
+        shaderPasses.push(shaderPassesDoc[i].id);
+    }
+    newShaderPipeline.id = JSON.stringify(shaderPasses);
+    newShaderPipeline.getElementsByTagName('span')[1].innerHTML = pipelineNameInput.value;
+    PipelineDropdownHolder.appendChild(newShaderPipeline);
 }
 
 function getDragAfterElement(container, y){
@@ -402,7 +430,6 @@ function selectPipeline(){
         let shaderId = shaderIds[i];
         let newPass = defaultShaderPass.cloneNode(true); 
         newPass.id = shaderId;
-        console.log(newPass.getElementsByTagName('p'));
         newPass.getElementsByTagName('p')[0].innerHTML  = idToShaderName[shaderId];
         newPass.addEventListener('dragstart', dragStartShaderPass);
         newPass.addEventListener('dragend', dragEndShaderPass);

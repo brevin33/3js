@@ -75,7 +75,7 @@ function StarShaderMaterial(){
         uniforms: uniforms,
         vertexShader: Star_VS,
         fragmentShader: Star_FS,
-        side: THREE.DoubleSide,
+        side: THREE.FrontSide,
     });
 
     return basicShaderMaterial;

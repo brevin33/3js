@@ -7,7 +7,7 @@ class Stars extends THREE.Group {
 
         this.starMat = new THREE.MeshBasicMaterial( {color: 0x00ff00 });
 
-        this.instances = 4000;
+        this.instances =  2000;
 
         this.z = -22;
 
@@ -29,20 +29,40 @@ class Stars extends THREE.Group {
 
 
 
-        this.positions.push( 1, 0, 0 );
-        this.positions.push( -1, 0, 0 );
-        this.positions.push( 0, 1, 0 );
+        const height = 1;
+        const width = 1;
+
+        this.positions.push( 0, height, 0 );
+        this.positions.push( width, -height, width );
+        this.positions.push( -width, -height, width );
+        this.positions.push( width, -height, -width );
+        this.positions.push( -width, -height, -width );
 
         this.indexs.push(0);
+        this.indexs.push(2);
+        this.indexs.push(1);
+        this.indexs.push(0);
+        this.indexs.push(1);
+        this.indexs.push(3);
+        this.indexs.push(0);
+        this.indexs.push(4);
+        this.indexs.push(2);
+        this.indexs.push(0);
+        this.indexs.push(3);
+        this.indexs.push(4);
         this.indexs.push(1);
         this.indexs.push(2);
+        this.indexs.push(4);
+        this.indexs.push(1);
+        this.indexs.push(4);
+        this.indexs.push(3);
 
 
         for(let i = 0; i < this.instances ; i++){
 
-            let dir =  new THREE.Vector3( Math.random() - .5, Math.random()/3, Math.random() - .9 );
+            let dir =  new THREE.Vector3( Math.random() - .5, Math.random()/2, Math.random() - .9 );
             dir.normalize();
-            let distance = Math.random() * 300.0 + 240.0;
+            let distance = Math.random() * 333.0 + 320.0;
             dir.multiplyScalar(distance);
 
             let posX = dir.x;

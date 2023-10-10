@@ -7,6 +7,11 @@
 	</head>
 	<body class="">
 
+		<div id="shaderPopup" class="left-[20%] top-[15%] w-[60%] h-[70%] bg-slate-900 absolute hidden">
+			<textarea name="Fragment Shader" id="" cols="1" rows="1" class="h-[97%] w-[85%] resize-none m-2"></textarea>
+			<button class="absolute left-[87.8%] bg-white p-2 top-[85%] w-[10%] hover:bg-gray-300">Save</button>
+		</div>
+
 		<div class="absolute left-[200%]" id="deadzone"></div>
 
 		<button class="absolute top-0 w-[5%] h-[100%] bg-black bg-opacity-25 transition-all" style="left: 95%;" id="shaderMenuButton">
@@ -17,30 +22,30 @@
 				<h1 class="text-white text-2xl pb-2">Post Processing Pipeline</h1>
 
 				<div class="w-[70%]">
-
-					<!-- Custom dropdown with Tailwind CSS classes -->
 					<div class="relative inline-block text-left">
 						<div>
 						<button id="toggleDropdown" class="mb-3 p-2 text-black bg-white border border-gray-300 rounded hover:bg-gray-300">
-							Select an Pipeline
+							Pipeline
 						</button>
+
 						</div>
-						<div id="dropdownContent" class="hidden origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" tabindex="-1">
-						<div class="hover:bg-gray-200 cursor-pointer dropdown py-1 z-50" role="menuitem" id="[]">
-							<span class="flex items-center justify-between">
-							<span>Nothing</span>
-							<button class="hover:bg-red-700 text-white bg-red-500 px-2 py-1 rounded mr-1" style="scale: 1;">Delete</button>
-							</span>
-						</div>
-						<div class="hover:bg-gray-200 cursor-pointer dropdown py-1 z-50" role="menuitem" id="[7,7,6,6]">
-							<span class="flex items-center justify-between">
-							<span>Dream</span>
-							<button class="hover:bg-red-700 text-white bg-red-500 px-2 py-1 rounded mr-1" style="scale: 0;">Delete</button>
-							</span>
-						</div>
+						<div id="dropdownContent" class="dropdownContent hidden origin-top-left absolute left-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" tabindex="-1">
+							<div class="hover:bg-gray-200 cursor-pointer dropdown py-1 z-50 defaultShaderPipeline" role="menuitem" id="[]">
+								<span class="flex items-center justify-between">
+								<span>Nothing</span>
+								<button class="hover:bg-red-700 text-white bg-red-500 px-2 py-1 rounded mr-1" style="scale: 0;">Delete</button>
+								</span>
+							</div>
+							<div class="hover:bg-gray-200 cursor-pointer dropdown py-1 z-50" role="menuitem" id="[7,7,6,6]">
+								<span class="flex items-center justify-between">
+								<span>Dream</span>
+								<button class="hover:bg-red-700 text-white bg-red-500 px-2 py-1 rounded mr-1" style="scale: 0;">Delete</button>
+								</span>
+							</div>
 						</div>
 					</div>
-					<button class="p-2 pl-[5%] pr-[5%] bg-white text-black rounded float-right hover:bg-gray-300">Save</button>
+					<input placeholder="Name" id="pipelineNameInput" class="nameInputPipeline mb-3 p-2 text-black bg-white border border-gray-300 rounded hover:bg-gray-300 inline-block resize-none w-[33%] t-[12%] h-[1%]">
+					<button class="p-2 pl-[5%] pr-[5%] bg-white text-black rounded float-right hover:bg-gray-300" id="Save">Save</button>
 
 				</div>
 				<div id="ShaderPipelineList" class="z-0 bg-white bg-opacity-10 w-[70%] min-h-[44px]">
@@ -83,6 +88,7 @@
 						<button class="text-red-500 float-right inline-block" style="scale: 0%;"> X </button>
 					</div>
 				</div>
+				<button id="NewShaderButton" class="relative mt-3 p-2 text-black bg-white border border-gray-300 rounded hover:bg-gray-300 left-[18%]">New Shader</button>
 			</div>
 		</div>
 
