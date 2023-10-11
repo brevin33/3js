@@ -16,6 +16,7 @@ import {BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 import { fireFly } from './firefly.js';
+import { ShaderMaterial } from 'three';
 
 let renderer;
 let grassField;
@@ -32,6 +33,7 @@ let postprocessingPasses;
 const emptySpaceBelow = 1.0;
 let x;
 let y;
+let plane;
 let shaderMenuButton;
 let shaderMenu;
 let shaderMenuOut = false;
@@ -56,6 +58,24 @@ let defaultShaderPipeline = document.querySelector('.defaultShaderPipeline').clo
 let pipelineNameInput = document.querySelector('.nameInputPipeline');
 let newShaderButton = document.getElementById("NewShaderButton");
 let newShaderMenu = document.getElementById("shaderPopup");
+let defaultPostProcessingShader;
+let newShaderSaveButton = document.getElementById("newShaderSaveButton");
+let shaderList = document.getElementById("ShaderList");
+var editor = ace.edit("editor");
+let baseShaderText = `uniform float opacity;
+    
+uniform sampler2D tDiffuse;
+		
+varying vec2 vUv;
+		
+void main() {
+		
+	vec4 texel = texture2D( tDiffuse, vUv );
+	gl_FragColor = opacity * texel;
+		
+}`
+let savedPipelines = []
+let savedPipelinesNames = []
 
 init();
 
@@ -86,6 +106,23 @@ function animate( ) {
 }
 
 function init(){
+    if(localStorage.getItem('savedPipelines')){
+        savedPipelines = localStorage.getItem('savedPipelines');
+        savedPipelines = JSON.parse(savedPipelines);
+        savedPipelinesNames = localStorage.getItem('savedPipelinesNames')
+        savedPipelinesNames = JSON.parse(savedPipelinesNames);
+    }
+    for(let i = 0; i < savedPipelines.length; i++){
+        let newShaderPipeline = defaultShaderPipeline.cloneNode(true);
+        newShaderPipeline.addEventListener('click', selectPipeline);
+        let deleteButton = newShaderPipeline.getElementsByTagName('button')[0];
+        deleteButton.addEventListener('click', deleteItem2);
+        deleteButton.style.scale = 1;
+        let shaderPasses = savedPipelines[i];
+        newShaderPipeline.id = JSON.stringify(shaderPasses);
+        newShaderPipeline.getElementsByTagName('span')[1].innerHTML = savedPipelinesNames[i];
+        PipelineDropdownHolder.appendChild(newShaderPipeline);    
+    }
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / (window.innerHeight * emptySpaceBelow), 0.1, 1000 );
     camera.lookAt(new THREE.Vector3(0,0,-1));
@@ -112,7 +149,7 @@ function init(){
     const material = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
     const cubeMaterial = new THREE.MeshStandardMaterial( { color: 0x006a7d } );
     const unlitMaterial = new THREE.MeshStandardMaterial( { emissive : 0xfef6ab , emissiveIntensity: 3} );
-    const plane = new THREE.Mesh( geometry, planeMaterial );
+    plane = new THREE.Mesh( geometry, planeMaterial );
     plane.rotation.x = - Math.PI / 2;
     plane.position.set(0,0-2.6,-22)
     plane.scale.set(.5,.5,.5);
@@ -142,14 +179,14 @@ function init(){
     const y = .4;
     body.position.set(x - .8, y, z);
     scene.add(body);
-    const pointLight = new THREE.PointLight(0xfefaad, 1.5, 10, .3);
+    const pointLight = new THREE.PointLight(0xfefaad, 2, 10, .3);
     pointLight.position.set(x, y, z);
     scene.add( pointLight );
     const body2 = new THREE.Mesh( box, unlitMaterial );
     body2.scale.set(fireFlySize,fireFlySize,fireFlySize);
     body2.position.set(x + .8, y, z);
     scene.add(body2);
-    const pointLight2 = new THREE.PointLight(0xfefaad, 1.5, 10, .3);
+    const pointLight2 = new THREE.PointLight(0xfefaad, 2, 10, .3);
     pointLight.position.set(x, y, z);
     scene.add( pointLight2 );
     fireFlys.push(new fireFly(body2, pointLight2));
@@ -162,7 +199,7 @@ function init(){
         const z = Math.random() * 44 - 40;
         body.position.set(x, y, z);
         scene.add(body);
-        const pointLight = new THREE.PointLight(0xfefaad, 1.5, 10, .3);
+        const pointLight = new THREE.PointLight(0xfefaad, 2, 10, .3);
         pointLight.position.set(x, y, z);
         scene.add( pointLight );
         fireFlys.push(new fireFly(body, pointLight));
@@ -251,6 +288,8 @@ function init(){
       }
     });
 
+    newShaderSaveButton.addEventListener('click', saveNewShaderButtonClicked);
+
     shadersPipelinesDrops.forEach(shadersPipelinesDrop => {shadersPipelinesDrop.addEventListener('click', selectPipeline)});
 
     newShaderButton.addEventListener('click', newShaderButtonPressed);
@@ -272,9 +311,69 @@ function init(){
     const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight * emptySpaceBelow ), 0.35, 0.5, 0.85 );
     postprocessingPasses.push(bloomPass);
     postprocessingPasses.push(new ShaderPass(GammaCorrectionShader));  
-    // ect
+    postprocessingPasses.push(new ShaderPass({
 
+        name: 'Cross Shader',
+    
+        uniforms: {
+    
+            'tDiffuse': { value: null },
+            'opacity': { value: 1.0 }
+    
+        },
+    
+        vertexShader: /* glsl */`
+    
+            varying vec2 vUv;
+    
+            void main() {
+    
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    
+            }`,
+    
+        fragmentShader: /* glsl */`
+    
+            uniform float opacity;
+    
+            uniform sampler2D tDiffuse;
+    
+            varying vec2 vUv;
+        
+            float luminance(vec4 color){
+                return (0.2126*color.x + 0.7152*color.y + 0.0722*color.z);
+            }
+
+            void main() {
+
+                float crossPatern[30] = float[](0.95,0.95,1.0,0.95,0.95,
+                                                0.95,0.95,0.95,1.0,0.95,
+                                                0.95,0.95,0.95,0.95,1.0,
+                                                1.0,0.95,0.95,0.95,0.95,
+                                                0.95,1.0,0.95,0.95,0.95,
+                                                0.95,0.95,1.0,0.95,0.95);
+                float crossPatern2[30] = float[](1.0,0.80,1.0,0.80,1.0,
+                                                0.80,1.0,0.80,1.0,0.80,
+                                                0.80,0.80,1.0,0.80,1.0,
+                                                1.0,0.80,0.80,1.0,0.80,
+                                                0.80,1.0,0.80,0.80,1.0,
+                                                1.0,0.80,1.0,0.80,0.80);
+                vec4 texel = vec4(1.0 - vec3(texture2D( tDiffuse, vUv )),1.0);
+                if(luminance(texel) > .9){
+                    gl_FragColor = vec4(1.0 -  vec3(opacity * texel * crossPatern[int(vUv.y * 1080.0)%6*5 + int(vUv.x * 1920.0)%5]),1.0);
+                }else{
+                    gl_FragColor = vec4(1.0 -  vec3(opacity * texel * crossPatern2[int(vUv.y * 1080.0)%6*5 + int(vUv.x * 1920.0)%5]),1.0);
+                }
+            }`
+    
+    }))
+    
+    // ect
     setupComposer();
+    editor.setTheme("ace/theme/monokai");
+    editor.session.setMode("ace/mode/glsl");
+
 
 }
 
@@ -314,6 +413,12 @@ function deleteItem(){
 
 function deleteItem2(event){
     event.stopPropagation();
+    const name = this.parentElement.getElementsByTagName('span')[0].innerHTML;
+    const index = savedPipelinesNames.findIndex((n) => n == name);
+    savedPipelinesNames.splice(index,1);
+    savedPipelines.splice(index,1);
+    localStorage.setItem('savedPipelines',JSON.stringify(savedPipelines));
+    localStorage.setItem('savedPipelinesNames',JSON.stringify(savedPipelinesNames));
     this.parentElement.parentElement.remove();
 }
 
@@ -329,6 +434,10 @@ function saveShaderPass(){
     }
     newShaderPipeline.id = JSON.stringify(shaderPasses);
     newShaderPipeline.getElementsByTagName('span')[1].innerHTML = pipelineNameInput.value;
+    savedPipelines.push(shaderPasses);
+    savedPipelinesNames.push(pipelineNameInput.value);
+    localStorage.setItem('savedPipelines',JSON.stringify(savedPipelines));
+    localStorage.setItem('savedPipelinesNames',JSON.stringify(savedPipelinesNames));
     PipelineDropdownHolder.appendChild(newShaderPipeline);
 }
 
@@ -421,6 +530,21 @@ function shaderMenuButtonClicked(){
 function moveTowards(num1, num2, maxSpeed){
     if(num1 > num2){return Math.max( num1 - maxSpeed, num2);}
     else{return Math.min( num1 + maxSpeed, num2);}
+}
+
+function saveNewShaderButtonClicked(){
+    let newShader = JSON.parse(JSON.stringify(defaultPostProcessingShader));
+    newShader.fragmentShader = editor.getValue();
+    let shaderId = postprocessingPasses.length;
+    postprocessingPasses.push(new ShaderPass( newShader ));
+    let newPass = defaultShaderPass.cloneNode(true); 
+    newPass.id = shaderId;
+    newPass.getElementsByTagName('p')[0].innerHTML  = idToShaderName[shaderId];
+    newPass.addEventListener('dragstart', dragStartShader);
+    newPass.addEventListener('dragend', dragEndShader);
+    newPass.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
+    shaderList.appendChild(newPass);
+    newShaderMenu.classList.add("hidden");
 }
 
 function selectPipeline(){

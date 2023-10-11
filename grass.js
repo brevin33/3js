@@ -51,10 +51,10 @@ class GrassField extends THREE.Group {
         this.indexs.push(3);
         this.indexs.push(4);
 
-        this.uvs.push(1.0, 0.0);
-        this.uvs.push(0.0, 0.0);
-        this.uvs.push(0.5, 1.0);
-        this.uvs.push(0.0, 0.0);
+        this.uvs.push(1.0, 1.0);
+        this.uvs.push(0.5, .5);
+        this.uvs.push(0.5, .5);
+        this.uvs.push(0.5, .5);
 
         for(let i = 0; i < this.instances ; i++){
             let posX = Math.random() * this.w - this.w/2;
