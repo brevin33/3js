@@ -15,8 +15,15 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import {BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
+import { AfterimagePass  } from 'three/addons/postprocessing/AfterimagePass.js';
+import { CubeTexturePass   } from 'three/addons/postprocessing/CubeTexturePass.js';
+import { FilmPass  } from 'three/addons/postprocessing/FilmPass.js';
+
+
+
 import { fireFly } from './firefly.js';
 import { ShaderMaterial } from 'three';
+
 
 let renderer;
 let grassField;
@@ -52,13 +59,70 @@ let deadzone = document.getElementById('deadzone');
 let isOverShaderPipeline = false;
 const toggleButton = document.getElementById('toggleDropdown');
 const dropdownContent = document.getElementById('dropdownContent');
-const idToShaderName = [' ', ' ', ' ', ' ', ' ', ' ', 'Bloom', 'Gamma Correction', 'bob'];
+const idToShaderName = [' ', ' ', ' ', ' ', ' ', ' ', 'Bloom', 'Gamma Correction', 'Cross Pattern', 'After Image', 'Film'];
 let defaultShaderPass;
 let defaultShaderPipeline = document.querySelector('.defaultShaderPipeline').cloneNode(true);
 let pipelineNameInput = document.querySelector('.nameInputPipeline');
+let shaderNameInput = document.getElementById("shaderNameInput");
 let newShaderButton = document.getElementById("NewShaderButton");
 let newShaderMenu = document.getElementById("shaderPopup");
-let defaultPostProcessingShader;
+let defaultPostProcessingShader = {
+
+    name: 'Cross Shader',
+
+    uniforms: {
+
+        'tDiffuse': { value: null },
+        'opacity': { value: 1.0 }
+
+    },
+
+    vertexShader: /* glsl */`
+
+        varying vec2 vUv;
+
+        void main() {
+
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+        }`,
+
+    fragmentShader: /* glsl */`
+
+        uniform float opacity;
+
+        uniform sampler2D tDiffuse;
+
+        varying vec2 vUv;
+    
+        float luminance(vec4 color){
+            return (0.2126*color.x + 0.7152*color.y + 0.0722*color.z);
+        }
+
+        void main() {
+
+            float crossPatern[30] = float[](0.95,0.95,1.0,0.95,0.95,
+                                            0.95,0.95,0.95,1.0,0.95,
+                                            0.95,0.95,0.95,0.95,1.0,
+                                            1.0,0.95,0.95,0.95,0.95,
+                                            0.95,1.0,0.95,0.95,0.95,
+                                            0.95,0.95,1.0,0.95,0.95);
+            float crossPatern2[30] = float[](1.0,0.80,1.0,0.80,1.0,
+                                            0.80,1.0,0.80,1.0,0.80,
+                                            0.80,0.80,1.0,0.80,1.0,
+                                            1.0,0.80,0.80,1.0,0.80,
+                                            0.80,1.0,0.80,0.80,1.0,
+                                            1.0,0.80,1.0,0.80,0.80);
+            vec4 texel = vec4(1.0 - vec3(texture2D( tDiffuse, vUv )),1.0);
+            if(luminance(texel) > .9){
+                gl_FragColor = vec4(1.0 -  vec3(opacity * texel * crossPatern[int(vUv.y * 1080.0)%6*5 + int(vUv.x * 1920.0)%5]),1.0);
+            }else{
+                gl_FragColor = vec4(1.0 -  vec3(opacity * texel * crossPatern2[int(vUv.y * 1080.0)%6*5 + int(vUv.x * 1920.0)%5]),1.0);
+            }
+        }`
+
+};
 let newShaderSaveButton = document.getElementById("newShaderSaveButton");
 let shaderList = document.getElementById("ShaderList");
 var editor = ace.edit("editor");
@@ -368,6 +432,8 @@ function init(){
             }`
     
     }))
+    postprocessingPasses.push(new AfterimagePass())
+    postprocessingPasses.push(new FilmPass())
     
     // ect
     setupComposer();
@@ -384,7 +450,7 @@ function setupComposer(){
         composer.addPass(postprocessingPasses[parseInt(shaderPassesDoc[i].id)]);
     }
     composer.addPass(postprocessingPasses[1]);
-
+    console.log(composer);
 }
 
 function onWindowResize() {
@@ -543,7 +609,10 @@ function saveNewShaderButtonClicked(){
     newPass.addEventListener('dragstart', dragStartShader);
     newPass.addEventListener('dragend', dragEndShader);
     newPass.getElementsByTagName('button')[0].addEventListener('click', deleteItem);
+    newPass.classList.remove('shaderPass');
+    newPass.getElementsByTagName('p')[0].innerHTML = shaderNameInput.value;
     shaderList.appendChild(newPass);
+    
     newShaderMenu.classList.add("hidden");
 }
 
