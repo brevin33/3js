@@ -1,9 +1,7 @@
 import * as THREE from 'three';
-import { OrbitControls} from 'three/examples/jsm/controls/OrbitControls'
 import { FBXLoader  } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { GrassField } from './grass.js';
 import { Stars } from './star.js';
-import {WebGLRenderTarget, HalfFloatType} from 'three';
 import Stats from 'stats.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -16,13 +14,8 @@ import {BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 import { AfterimagePass  } from 'three/addons/postprocessing/AfterimagePass.js';
-import { CubeTexturePass   } from 'three/addons/postprocessing/CubeTexturePass.js';
 import { FilmPass  } from 'three/addons/postprocessing/FilmPass.js';
-
-
-
 import { fireFly } from './firefly.js';
-import { ShaderMaterial } from 'three';
 
 
 let renderer;
